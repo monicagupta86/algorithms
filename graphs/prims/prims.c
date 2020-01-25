@@ -35,13 +35,13 @@ void heapify (edge_t array[], int idx, int n)
     }
 }
 
-void delete_connected_edges (vertex_list_t *vertex_list, int idx)
+void delete_connected_edges (graph_t *graph, int idx)
 {
-    vertex_t *vertex = &vertex_list->vertex[idx];
+    vertex_t *vertex = &graph->vertex[idx];
 
     while ((vertex->no_edges > 0) &&
-           vertex_list->vertex[vertex->edge[0].from].connected &&
-           vertex_list->vertex[vertex->edge[0].to].connected) {
+           graph->vertex[vertex->edge[0].from].connected &&
+           graph->vertex[vertex->edge[0].to].connected) {
 
         vertex->edge[0] = vertex->edge[vertex->no_edges - 1];
         vertex->no_edges--;
@@ -58,20 +58,24 @@ void heapify_vertex (vertex_t *vertex)
     }
 }
 
-void init_graph (vertex_list_t *vertex_list)
+void init_graph (graph_t *graph)
 {
-    for (int i = 1; i <= vertex_list->no_vertices; i++) {
-        heapify_vertex(&vertex_list->vertex[i]);
-        vertex_list->vertex[i].connected = 0;
+	/* For all vertices:
+	 * Arrange their edges in min heap by cost
+	 */
+    for (int i = 1; i <= graph->no_vertices; i++) {
+        heapify_vertex(&graph->vertex[i]);
+        graph->vertex[i].connected = 0;
     }
 }
 
-edge_t find_starting_minimum_edge (vertex_list_t *vertex_list)
+edge_t find_starting_minimum_edge (graph_t *graph)
 {
     edge_t min = {MAX_INT, 0, 0};
-    int no_vertices = vertex_list->no_vertices;
-    vertex_t *vertex = vertex_list->vertex;
+    int no_vertices = graph->no_vertices;
+    vertex_t *vertex = graph->vertex;
 
+	/* Find least cost edge from all vertices */
     for (int i = 1; i <= no_vertices; i++) {
         if ((vertex[i].no_edges > 0) && vertex[i].edge[0].cost < min.cost) {
             min = vertex[i].edge[0];
@@ -82,18 +86,19 @@ edge_t find_starting_minimum_edge (vertex_list_t *vertex_list)
     vertex[min.from].connected = 1;
     vertex[min.to].connected = 1;
 
-    delete_connected_edges(vertex_list, min.from);
-    delete_connected_edges(vertex_list, min.to);
+    delete_connected_edges(graph, min.from);
+    delete_connected_edges(graph, min.to);
 
     return min;
 }
 
-edge_t find_next_connected_minimum (vertex_list_t *vertex_list)
+edge_t find_next_connected_minimum (graph_t *graph)
 {
     edge_t min = {MAX_INT, 0, 0};
-    int no_vertices = vertex_list->no_vertices;
-    vertex_t *vertex = vertex_list->vertex;
+    int no_vertices = graph->no_vertices;
+    vertex_t *vertex = graph->vertex;
 
+	/* Find least cost connected edge from all vertices */
     for (int i = 1; i <= no_vertices; i++) {
         if ((vertex[i].no_edges > 0) && (vertex[i].edge[0].cost < min.cost)) {
             int from_connected = vertex[vertex[i].edge[0].from].connected;
@@ -108,22 +113,22 @@ edge_t find_next_connected_minimum (vertex_list_t *vertex_list)
     vertex[min.from].connected = 1;
     vertex[min.to].connected = 1;
 
-    delete_connected_edges(vertex_list, min.from);
-    delete_connected_edges(vertex_list, min.to);
+    delete_connected_edges(graph, min.from);
+    delete_connected_edges(graph, min.to);
 
     return min;
 }
 
-void prims_minimum_spanning_tree (vertex_list_t *vertex_list)
+void prims_minimum_spanning_tree (graph_t *graph)
 {
-    init_graph(vertex_list);
+    init_graph(graph);
 
 	printf("Prim's Minimum Cost Spanning Tree...\n");
-    edge_t min = find_starting_minimum_edge(vertex_list);
+    edge_t min = find_starting_minimum_edge(graph);
     printf("%d (%d, %d)\n", min.cost, min.from, min.to);
 
-    for (int i = 2; i < vertex_list->no_vertices; i++) {
-        min = find_next_connected_minimum(vertex_list);
+    for (int i = 2; i < graph->no_vertices; i++) {
+        min = find_next_connected_minimum(graph);
         printf("%d (%d, %d)\n", min.cost, min.from, min.to);
     }
 }
@@ -136,9 +141,9 @@ int main (int argc, char *argv[])
     }
 
 	printf("Reading graph from file: %s\n", argv[1]);
-    vertex_list_t vertex_list = read_graph(argv[1]);
+    graph_t graph = read_graph(argv[1]);
 
-    prims_minimum_spanning_tree(&vertex_list);
+    prims_minimum_spanning_tree(&graph);
 
     return 0;
 }

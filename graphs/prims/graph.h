@@ -15,9 +15,9 @@ typedef struct vertex_ {
 	int connected;
 } vertex_t;
 
-typedef struct vertex_l_ {
+typedef struct graph_ {
 	vertex_t *vertex;
 	int no_vertices;
-} vertex_list_t;
+} graph_t;
 
-vertex_list_t read_graph(char *filename);
+graph_t read_graph(char *filename);

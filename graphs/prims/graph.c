@@ -1,11 +1,11 @@
 #include "graph.h"
 
-vertex_list_t read_graph(char *filename)
+graph_t read_graph(char *filename)
 {
     FILE *fptr;
     size_t len;
     char *line;
-    vertex_list_t vertex_list;
+    graph_t graph;
 
     if ((fptr = fopen(filename, "r")) == NULL) {
         printf("Error: Opening file: %s\n", filename);
@@ -15,23 +15,23 @@ vertex_list_t read_graph(char *filename)
     if (getline(&line, &len, fptr) == -1) {
         printf("Error: Unexpected end of file encountered while reading number of vertices\n");
         exit(1);
-    } else if (1 != sscanf(line, "%d", &vertex_list.no_vertices)) {
+    } else if (1 != sscanf(line, "%d", &graph.no_vertices)) {
         printf("Error: Parse failed while reading number of vertices\n");
         exit(1);
-    } else if (vertex_list.no_vertices <= 0) {
-        printf("Error: Unexpected number of vertices: %d\n", vertex_list.no_vertices);
+    } else if (graph.no_vertices <= 0) {
+        printf("Error: Unexpected number of vertices: %d\n", graph.no_vertices);
         exit(1);
     }
 
-    vertex_list.vertex = (vertex_t *)malloc(sizeof(vertex_t) * (vertex_list.no_vertices + 1));
-    if (!vertex_list.vertex) {
+    graph.vertex = (vertex_t *)malloc(sizeof(vertex_t) * (graph.no_vertices + 1));
+    if (!graph.vertex) {
         printf("Error allocating vertex memory\n");
         fclose(fptr);
         exit(1);
     }
 
-    for (int i = 1; i <= vertex_list.no_vertices; i++) {
-        vertex_t *vertex = &vertex_list.vertex[i];
+    for (int i = 1; i <= graph.no_vertices; i++) {
+        vertex_t *vertex = &graph.vertex[i];
         if (getline(&line, &len, fptr) == -1) {
             printf("Error: Unexpected end of file encountered while reading number of edges for vertex %d\n", i);
             exit(1);
@@ -59,7 +59,7 @@ vertex_list_t read_graph(char *filename)
             } else if (2 != sscanf(line, "%d %d", &vertex->edge[j].to, &vertex->edge[j].cost)) {
                 printf("Error: Parse failed while reading edge %d on vertex %d\n", j + 1, i);
                 exit(1);
-            } else if ((vertex->edge[j].to < 1) || (vertex->edge[j].to > vertex_list.no_vertices)) {
+            } else if ((vertex->edge[j].to < 1) || (vertex->edge[j].to > graph.no_vertices)) {
                 printf("Error: Invalid to edge %d for edge (%d) on vertex: %d\n",
                        vertex->edge[j].to, j + 1, i);
                 exit(1);
@@ -68,5 +68,5 @@ vertex_list_t read_graph(char *filename)
         }
     }
 
-    return vertex_list;
+    return graph;
 }
